@@ -9,6 +9,17 @@ class CorreoChanged extends AuthEvent {
   const CorreoChanged({this.correo});
 }
 
+class NameChanged extends AuthEvent {
+  final String? name;
+  const NameChanged({this.name});
+}
+
+class OnRegister<T> extends AuthEvent {
+  final String? name;
+  final IAuthReposotory<T> authRepository;
+  const OnRegister({this.name, required this.authRepository});
+}
+
 class PasswordChanged extends AuthEvent {
   final String? password;
   const PasswordChanged({this.password});

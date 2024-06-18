@@ -18,7 +18,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<ClearLoginFields>(_onClearLoginFields);
   }
   _onUserNameChanged(CorreoChanged event, Emitter<AuthState> emit) {
-    final newState = state.copyWith(username: event.correo);
+    final newState = state.copyWith(mail: event.correo);
     emit(newState);
   }
 
@@ -31,8 +31,24 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(state.copyWith(formStatus: const Submitting()));
     final repository = event.authRepository;
 
-    final result = await repository.login(
-        email: state.username!, password: state.password!);
+    final result =
+        await repository.login(email: state.mail!, password: state.password!);
+    result.when(
+      success: (data) {
+        emit(state.copyWith(formStatus: Success(result: data)));
+      },
+      failure: (error) {
+        emit(state.copyWith(formStatus: Failed(error)));
+      },
+    );
+  }
+
+  _onRegister(OnRegister event, Emitter<AuthState> emit) async {
+    emit(state.copyWith(formStatus: const Submitting()));
+    final repository = event.authRepository;
+
+    final result = await repository.register(
+        userName: state.mail!, email: state.mail!, password: state.password!);
     result.when(
       success: (data) {
         emit(state.copyWith(formStatus: Success(result: data)));

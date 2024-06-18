@@ -41,9 +41,8 @@ class _PasswordInputState extends State<PasswordInput> {
             keyboardType: TextInputType.text,
             obscureText: isObscure,
             onChanged: widget.onChanged,
-            validator: (value) => value == null || value.isEmpty
-                ? 'Por favor ingrese algo'
-                : null,
+            validator: (value) =>
+                value!.length < 6 ? 'minimo 6 caracteres' : null,
             autovalidateMode: AutovalidateMode.onUserInteraction,
             decoration: InputDecoration(
               hintText: 'Contraseña',

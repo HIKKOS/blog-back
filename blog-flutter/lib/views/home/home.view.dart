@@ -34,12 +34,20 @@ class HomeView extends StatelessWidget {
                       actions: [
                         TextButton(
                           onPressed: () {
+                            _result = null;
                             Navigator.of(context).pop();
                           },
                           child: const Text('Cancel'),
                         ),
                         TextButton(
                           onPressed: () async {
+                            if (_titleController.text.isEmpty ||
+                                _contentController.text.isEmpty ||
+                                _result == null) {
+                              showToast('rellena todos los campos',
+                                  position: ToastPosition.bottom);
+                              return;
+                            }
                             await cubit.addPost(
                                 title: _titleController.text,
                                 content: _contentController.text,
@@ -47,6 +55,7 @@ class HomeView extends StatelessWidget {
 
                             showToast('Post added',
                                 position: ToastPosition.bottom);
+                            _result = null;
                             Navigation.pop();
                           },
                           child: const Text('Add'),
@@ -84,22 +93,24 @@ class _MyFormState extends State<MyForm> {
                     height: 350,
                     fit: BoxFit.fill,
                   )),
-        ElevatedButton(
-          onPressed: () async {
-            try {
-              final result = await FilePickerWeb.platform.pickFiles();
-              if (result != null) {
-                setState(() {
-                  _result = result;
-                });
-              } else {
-                showToast('No file selected', position: ToastPosition.bottom);
-              }
-            } catch (e) {
-              print(e);
-            }
-          },
-          child: const Text('Pick File'),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: ElevatedButton.icon(
+            icon: const Icon(Icons.upload),
+            onPressed: () async {
+              try {
+                final result = await FilePickerWeb.platform.pickFiles();
+                if (result != null) {
+                  setState(() {
+                    _result = result;
+                  });
+                } else {
+                  showToast('No file selected', position: ToastPosition.bottom);
+                }
+              } catch (_) {}
+            },
+            label: const Text('Pick File'),
+          ),
         ),
         TextFormField(
           decoration: const InputDecoration(
@@ -107,6 +118,7 @@ class _MyFormState extends State<MyForm> {
           ),
           controller: _titleController,
         ),
+        const SizedBox(height: 10),
         TextFormField(
           decoration: const InputDecoration(
             labelText: 'Content',
@@ -155,16 +167,23 @@ class Posts extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      child: ListView.builder(
-        shrinkWrap: true,
-        itemCount: posts.length,
-        itemBuilder: (context, index) {
-          final post = posts[index];
-          return MyCard(post: post);
-        },
-      ),
+    final size = MediaQuery.of(context).size;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        SizedBox(
+          width: size.width * 0.4,
+          child: ListView.builder(
+            padding: const EdgeInsets.all(8),
+            shrinkWrap: true,
+            itemCount: posts.length,
+            itemBuilder: (context, index) {
+              final post = posts[index];
+              return MyCard(post: post);
+            },
+          ),
+        ),
+      ],
     );
   }
 }
@@ -181,54 +200,63 @@ class MyCard extends StatelessWidget {
     final formKey = GlobalKey<FormState>();
     final textController = TextEditingController();
     final cubit = context.read<PostsCubit>();
-    return Card(
-      child: Column(
-        children: [
-          ListTile(
-            leading: Image.network(post.author.photo ?? noPhoto),
-            title: Text(post.author.name),
-          ),
-          if (post.photo != null)
-            Image.memory(
-              base64Decode(post.photo!),
-              height: 200,
-            ),
-          ListTile(
-            title: Text(post.title),
-            subtitle: Text(post.content),
-          ),
-          const Text('Commentarios:'),
-          for (var comment in post.comments)
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Card(
+        child: Column(
+          children: [
             ListTile(
-              title: Text('${comment.content}'),
+              leading: Image.network(post.author.photo ?? noPhoto),
+              title: Text(post.author.name),
+              subtitle: Text(
+                  '${post.createdAt.day}-${post.createdAt.month}-${post.createdAt.year} a las ${post.createdAt.hour}:${post.createdAt.minute}'),
             ),
-          Form(
-            key: formKey,
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    decoration: const InputDecoration(
-                      labelText: 'Comment',
+            if (post.photo != null)
+              Image.memory(
+                base64Decode(post.photo!),
+                height: 200,
+              ),
+            ListTile(
+              title: Text(post.title),
+              subtitle: Text(post.content),
+            ),
+            const Text('Commentarios:'),
+            for (var comment in post.comments)
+              ListTile(
+                leading: comment.author?.photo == null
+                    ? const Icon(Icons.person)
+                    : Image.network(comment.author!.photo!),
+                title: Text(comment.author?.name ?? 'Anonimo'),
+                subtitle: Text('${comment.content}'),
+              ),
+            Form(
+              key: formKey,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      decoration: const InputDecoration(
+                        labelText: 'Comment',
+                      ),
+                      validator: (value) =>
+                          value!.isEmpty ? 'Comenta algo' : null,
+                      controller: textController,
                     ),
-                    validator: (value) =>
-                        value!.isEmpty ? 'Comenta algo' : null,
-                    controller: textController,
                   ),
-                ),
-                ElevatedButton(
-                    onPressed: () async {
-                      if (!formKey.currentState!.validate()) {
-                        return;
-                      }
-                      await cubit.comment(
-                          postId: post.id, comment: textController.text);
-                    },
-                    child: const Text('Comment'))
-              ],
-            ),
-          )
-        ],
+                  ElevatedButton(
+                      onPressed: () async {
+                        if (!formKey.currentState!.validate()) {
+                          return;
+                        }
+                        await cubit.comment(
+                            postId: post.id, comment: textController.text);
+                      },
+                      child: const Text('Comment'))
+                ],
+              ),
+            )
+          ],
+        ),
       ),
     );
   }

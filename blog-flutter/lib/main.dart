@@ -1,5 +1,6 @@
 import 'package:blog/auth/auth_bloc.dart';
 import 'package:blog/config/routes/app_routes.dart';
+import 'package:blog/config/themes/app_themes.dart';
 import 'package:blog/cubit/posts_cubit.dart';
 import 'package:blog/utils/navigation_key.dart';
 import 'package:blog/utils/preferences.dart';
@@ -35,10 +36,7 @@ class MyApp extends StatelessWidget {
           title: 'Flutter Demo',
           routes: AppRoutes.routes,
           navigatorKey: NavigationKey.navigatorKey,
-          theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-            useMaterial3: true,
-          ),
+          theme: AppTheme.lightTheme,
           home: const LoginView(),
         ),
       ),

@@ -6,6 +6,7 @@ import 'package:blog/http/auth/auth_user.http.dart';
 import 'package:blog/model/user.dart';
 import 'package:blog/utils/navigation_util.dart';
 import 'package:blog/widgets/password_input.dart';
+import 'package:blog/widgets/usuario_input.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:oktoast/oktoast.dart';
@@ -14,8 +15,8 @@ import '../../widgets/correo_input.dart';
 
 final _myFormKey = GlobalKey<FormState>();
 
-class LoginView extends StatelessWidget {
-  const LoginView({super.key});
+class RegistroView extends StatelessWidget {
+  const RegistroView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -38,11 +39,18 @@ class LoginView extends StatelessWidget {
                       child: Column(children: [
                         const Padding(
                           padding: EdgeInsets.only(top: 10, bottom: 20.0),
-                          child: Text('Bienvenido',
+                          child: Text('Registro',
                               style: TextStyle(
                                   fontSize: 32.0,
                                   color: LightColors.darkBlue,
                                   fontWeight: FontWeight.bold)),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: UsuarioInput.withoutValidation(
+                            onChanged: (String? p0) =>
+                                (bloc.add(NameChanged(name: p0))),
+                          ),
                         ),
                         CorreoInput.withoutValidation(
                           onChanged: (String? p0) =>
@@ -54,8 +62,7 @@ class LoginView extends StatelessWidget {
                               onChanged: (p0) =>
                                   (bloc.add(PasswordChanged(password: p0))),
                             )),
-                        const _LoginButton(),
-                        const _SignInText(),
+                        const _LoginButton()
                       ])),
                 ),
               ),
@@ -63,39 +70,6 @@ class LoginView extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _SignInText extends StatelessWidget {
-  const _SignInText();
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-        const SizedBox(
-          height: 50,
-          child: Center(
-            child: Text('Si no tienes una cuenta puedes ',
-                style: TextStyle(fontSize: 16, color: LightColors.text)),
-          ),
-        ),
-        InkWell(
-          borderRadius: BorderRadius.circular(50),
-          onTap: () => Navigation.pushNamed(routeName: AppRoutes.signIn),
-          child: const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 1.0),
-            child: SizedBox(
-              height: 50,
-              child: Center(
-                child: Text('crear una',
-                    style: TextStyle(fontSize: 16, color: LightColors.primary)),
-              ),
-            ),
-          ),
-        ),
-      ]),
     );
   }
 }
